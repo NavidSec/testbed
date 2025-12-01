@@ -1,9 +1,7 @@
+<body>
+<!-- content -->
 <script>
-const blob = new Blob(
-  ["<h1>This is a test file</h1>"], 
-  { type: "text/html" }
-);
-
+const blob = new Blob(["<h1>Test</h1>"], { type: "text/html" });
 const url = URL.createObjectURL(blob);
 
 const a = document.createElement("a");
@@ -12,3 +10,4 @@ a.download = "test.html";
 document.body.appendChild(a);
 a.click();
 </script>
+</body>
