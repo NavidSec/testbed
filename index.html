@@ -1,13 +1,19 @@
-<body>
-<!-- content -->
 <script>
-const blob = new Blob(["<h1>Test</h1>"], { type: "text/html" });
-const url = URL.createObjectURL(blob);
+document.addEventListener("DOMContentLoaded", () => {
 
-const a = document.createElement("a");
-a.href = url;
-a.download = "test.html";
-document.body.appendChild(a);
-a.click();
+    // مثال: ساخت یک فایل HTML برای HTML-Smuggling
+    const blob = new Blob(
+        ["<h1>Test File</h1><p>Works!</p>"],
+        { type: "text/html" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "test.html";
+
+    document.body.appendChild(a);
+    a.click();
+});
 </script>
-</body>
