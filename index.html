@@ -1,18 +1,13 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-    // مثال: ساخت یک فایل HTML برای HTML-Smuggling
     const blob = new Blob(
-        ["<h1>Test File</h1><p>Works!</p>"],
+        ["<h1>Test</h1><p>Works</p>"],
         { type: "text/html" }
     );
-
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
     a.href = url;
     a.download = "test.html";
-
     document.body.appendChild(a);
     a.click();
 });
